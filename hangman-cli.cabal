@@ -13,8 +13,8 @@ version:            0.1.0.0
 
 -- The license under which the package is released.
 -- license:
-author:             gmoratorio
-maintainer:         moratorio.guillermo@gmail.com
+author:             Guillermo
+maintainer:         Guillermo
 
 -- A copyright notice.
 -- copyright:
@@ -30,13 +30,18 @@ executable hangman-cli
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:    base ^>=4.14.3.0
-                    , hangman-cli
+                      , containers
+                      , hangman-cli                    
     hs-source-dirs:   app
     default-language: Haskell2010
 
 library
     build-depends:      base ^>=4.14.3.0
+                      , containers
     hs-source-dirs:     src
     default-language:   Haskell2010
-    exposed-modules:    Logic.hs
-    other-modules:      SharedTypes.hs
+    exposed-modules:    Logic,
+                        SharedTypes,
+                        Printers,
+                        IOInputs
+    other-modules:      

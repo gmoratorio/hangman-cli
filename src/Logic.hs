@@ -1,18 +1,21 @@
 module Logic
-        (
+        ( checkForValidSecretWord
+        , checkForValidGuess
+        , generateOptionMap
+        , addGuess
+        , checkForWin
+        , getIsInWord
+        , OptionMap
         ) where
 
-import SharedTypes (GameStatus(..))
-import Data.Char (toLower)
 import Data.Maybe (fromJust, isNothing)
 import Data.List (all)
 import qualified Data.Map as M
 
-type SecretWord = String
+import SharedTypes (GameStatus(..), SecretWord, InputValidity(..), InWordStatus(..))
 
 data SubmitStatus = Success | Fail
 data GuessStatus = Guessed | NotGuessed deriving (Show, Eq)
-data InWordStatus = InWord | NotInWord deriving Show
 data Option = Option {letter :: Char, guessStatus :: GuessStatus, inWordStatus :: InWordStatus} deriving Show
 
 type OptionMap = M.Map Char Option
@@ -55,11 +58,12 @@ checkForWin sw optMap = if all (\char -> getGuessStatus char optMap == Guessed) 
                             then Won
                             else InProgress
 
+checkForValidSecretWord :: String -> InputValidity 
+checkForValidSecretWord input = if all (\char -> char `elem` ['a'..'z']) input
+                                    then Valid
+                                    else NotValid
 
-addGuesses :: OptionMap
-addGuesses =    let ogMap   = generateOptionMap "hello"
-                    u1      = addGuess 'e' ogMap
-                    u2      = addGuess 'l' u1
-                    u3      = addGuess 'h' u2
-                    u4      = addGuess 'o' u3
-                in u4
+checkForValidGuess :: Char -> InputValidity 
+checkForValidGuess input = if input `elem` ['a'..'z']
+                                then Valid
+                                else NotValid
