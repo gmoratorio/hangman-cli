@@ -1,5 +1,5 @@
 module SharedTypes 
-                ( 
+                ( GameStatus(..)
                 ) where
 
 data GameStatus = InProgress | Won | Lost deriving Show
