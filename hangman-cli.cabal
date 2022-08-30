@@ -31,13 +31,15 @@ executable hangman-cli
     -- other-extensions:
     build-depends:    base ^>=4.14.3.0
                       , containers
-                      , hangman-cli                    
+                      , hangman-cli     
+                      , ansi-terminal               
     hs-source-dirs:   app
     default-language: Haskell2010
 
 library
     build-depends:      base ^>=4.14.3.0
                       , containers
+                      , ansi-terminal
     hs-source-dirs:     src
     default-language:   Haskell2010
     exposed-modules:    Logic,
