@@ -54,8 +54,11 @@ getUserGuess :: RemainingGuesses -> GuessedLetters -> IO (Char)
 getUserGuess rg letters = do
         putStrLn "\nPlayer 2, guess a letter!"
         putStrLn $ "\nYou have " ++ show rg  ++ " guesses left"
-        putStrLn "\nYou've guessed these letters so far: "
-        putStrLn letters
+        if null letters
+            then putStrLn "\nYou've guessed no letters so far."
+            else do
+                putStrLn "\nYou've guessed these letters so far: "
+                putStrLn letters
         guess <- getLine -- deliberately using getLine vs getChar since getChar acts differently with cabal run vs cabal repl
         if length guess == 1
             then do
