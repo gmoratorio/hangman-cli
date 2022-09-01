@@ -1,10 +1,12 @@
 module Logic
         ( checkForValidSecretWord
         , checkForValidGuess
+        , checkForValidDifficulty
         , generateOptionMap
         , addGuess
         , checkForWin
         , getIsInWord
+        , getAllGuesses
         , OptionMap
         ) where
 
@@ -53,6 +55,12 @@ addGuess char optMap =
                         newOption = Option {letter = letter prevOption, inWordStatus = inWordStatus prevOption, guessStatus = Guessed}
                     in M.adjust (const newOption) char optMap
 
+getAllGuesses :: OptionMap -> String
+getAllGuesses optMap = 
+                let guessedOptions  = M.elems $ M.filter (\option -> guessStatus option == Guessed) optMap
+                    allLetters      = (\option-> letter option) <$> guessedOptions
+                in  allLetters
+
 checkForWin :: SecretWord -> OptionMap -> GameStatus
 checkForWin sw optMap = if all (\char -> getGuessStatus char optMap == Guessed) sw
                             then Won
@@ -67,3 +75,7 @@ checkForValidGuess :: Char -> InputValidity
 checkForValidGuess input = if input `elem` ['a'..'z']
                                 then Valid
                                 else NotValid
+checkForValidDifficulty :: Char -> InputValidity 
+checkForValidDifficulty input = if input `elem` ['e','n','h']
+                                    then Valid
+                                    else NotValid
