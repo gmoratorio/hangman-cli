@@ -1,13 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 module IOInputs 
             ( getSecretWord
-            , getUserGuess
             , getDifficulty
             ) where
 
 import Data.Char (toLower)
-import SharedTypes (SecretWord, InputValidity(..), RemainingGuesses, GuessedLetters, GameDifficulty(..))
-import Logic (checkForValidSecretWord, checkForValidGuess, checkForValidDifficulty)
+
+import SharedTypes (SecretWord, InputValidity(..), RemainingGuesses, GuessedLetters, GameDifficulty(..), GameState(..))
+import Logic (checkForValidSecretWord, checkForValidDifficulty)
 import Util (toLowerString)
 import System.Console.ANSI (clearScreen)
 
@@ -49,31 +49,4 @@ getDifficulty = do
                     putStrLn "Sorry, please enter E for Easy, N for Normal, or H for Hard."
                     putStrLn $ "You entered: " ++ show diff
                     getDifficulty
-
-getUserGuess :: RemainingGuesses -> GuessedLetters -> IO (Char)
-getUserGuess rg letters = do
-        putStrLn "\nPlayer 2, guess a letter!"
-        putStrLn $ "\nYou have " ++ show rg  ++ " guesses left"
-        if null letters
-            then putStrLn "\nYou've guessed no letters so far."
-            else do
-                putStrLn "\nYou've guessed these letters so far: "
-                putStrLn letters
-        guess <- getLine -- deliberately using getLine vs getChar since getChar acts differently with cabal run vs cabal repl
-        if length guess == 1
-            then do
-                let lowerGuess = toLower $ head guess
-                    validity = checkForValidGuess lowerGuess
-                if validity == Valid
-                    then return lowerGuess
-                    else do
-                        clearScreen
-                        putStrLn "Sorry, your guess must be a letter. Please try again."
-                        putStrLn $ "You guessed: " ++ show guess
-                        getUserGuess rg letters
-            else do
-                clearScreen
-                putStrLn "Sorry, you can only guess one letter at a time!"
-                putStrLn $ "You guessed: " ++ show guess
-                getUserGuess rg letters
         

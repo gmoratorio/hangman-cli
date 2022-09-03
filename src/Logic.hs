@@ -7,20 +7,19 @@ module Logic
         , checkForWin
         , getIsInWord
         , getAllGuesses
+        , getDecodedSecretWord
+        , getGameStatus
         , OptionMap
         ) where
 
 import Data.Maybe (fromJust, isNothing)
 import Data.List (all)
 import qualified Data.Map as M
+import Control.Monad.State
 
-import SharedTypes (GameStatus(..), SecretWord, InputValidity(..), InWordStatus(..))
+import SharedTypes (GameStatus(..), SecretWord, InputValidity(..), InWordStatus(..), Option(..), OptionMap, GuessStatus(..), GameState(..))
 
-data SubmitStatus = Success | Fail
-data GuessStatus = Guessed | NotGuessed deriving (Show, Eq)
-data Option = Option {letter :: Char, guessStatus :: GuessStatus, inWordStatus :: InWordStatus} deriving Show
 
-type OptionMap = M.Map Char Option
 
 
 generateOption :: Char -> SecretWord -> Option
@@ -58,13 +57,28 @@ addGuess char optMap =
 getAllGuesses :: OptionMap -> String
 getAllGuesses optMap = 
                 let guessedOptions  = M.elems $ M.filter (\option -> guessStatus option == Guessed) optMap
-                    allLetters      = (\option-> letter option) <$> guessedOptions
+                    allLetters      = letter <$> guessedOptions
                 in  allLetters
+
+decodeLetter :: OptionMap -> Char -> Char
+decodeLetter opt c = if getGuessStatus c opt == Guessed
+                        then c
+                        else '_'
+
+getDecodedSecretWord :: SecretWord -> OptionMap -> String
+getDecodedSecretWord sw optMap = decodeLetter optMap <$> sw
 
 checkForWin :: SecretWord -> OptionMap -> GameStatus
 checkForWin sw optMap = if all (\char -> getGuessStatus char optMap == Guessed) sw
                             then Won
                             else InProgress
+
+getGameStatus :: State GameState GameStatus
+getGameStatus = do
+    game <- get
+    if all (\char -> getGuessStatus char (optionMap game) == Guessed) (secretWord game)
+                            then return Won
+                            else return InProgress
 
 checkForValidSecretWord :: String -> InputValidity 
 checkForValidSecretWord input = if all (\char -> char `elem` ['a'..'z']) input

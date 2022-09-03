@@ -1,23 +1,52 @@
 module Printers 
-            (
-
+            ( printHangmanUI
             ) where
 
-import SharedTypes(GameDifficulty(..))
+import qualified Data.Map as M
+import Control.Monad.State
 
--- printHangmanUI :: GameDifficulty -> SecretWord -> OptionMap -> GuessCount -> AttemptsAllowed -> IO ()
--- printHangmanUI diff sw optMap gc aa = do
---                         let emptyBoard  = [" _________________ ", "|                 |", "|                 |", "|                 |", "|                 |", "|                 |", "|                 |", "|                 |", "|_________________|"]
---                             oneWrong    = [" _________________ ", "|                 |", "|                 |", "|                 |", "|                 |", "|                 |", "|                 |", "|     __________ |", "|____/__________\\|"]
---                             twoWrong    = [" _________________ ", "|                 |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||__________ |", "|____/__________\\|"]
---                             threeWrong  = [" _________________ ", "|   ________     |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||__________ |", "|____/__________\\|"]
---                             fourWrong   = [" _________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||__________ |", "|____/__________\\|"]
---                             fiveWrong   = [" _________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||     😐    |", "|   ||           |", "|   ||           |", "|   ||__________ |", "|____/__________\\|"]
---                             sixWrong    = [" _________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||     😕    |", "|   ||    \\|     |", "|   ||     |     |", "|   ||__________ |", "|____/__________\\|"]
---                             sevenWrong  = [" _________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||     😕    |", "|   ||    \\|/    |", "|   ||     |     |", "|   ||__________ |", "|____/__________\\|"]
---                             eightWrong  = [" _________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||     😕    |", "|   ||    \\|/    |", "|   ||     |     |", "|   ||____/_____ |", "|____/__________\\|"]
---                             nineWrong   = [" _________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||     😕    |", "|   ||    \\|/    |", "|   ||     |     |", "|   ||____/_\\___ |", "|____/__________\\|"]
---                             tenWrong    = [" _________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||     😕    |", "|   ||    \\|/    |", "|   ||     |     |", "|   ||___ / \\ __ |", "|____/__________\\|"]
+import SharedTypes(SecretWord, RemainingGuesses, GameState(..))
+import Logic(getDecodedSecretWord, OptionMap)
+
+type PictureMap = M.Map RemainingGuesses [String]
+
+printPicture :: RemainingGuesses -> IO ()
+printPicture rg = do
+            let tenLeft  = [" ________________ ", "|                |", "|                |", "|                |", "|                |", "|                |", "|                |", "|                |", "|________________|"]
+                nineLeft    = [" ________________ ", "|                |", "|                |", "|                |", "|                |", "|                |", "|                |", "|     __________ |", "|____/__________\\|"]
+                eightLeft    = [" ________________ ", "|                |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||__________ |", "|____/__________\\|"]
+                sevenLeft  = [" ________________ ", "|   ________     |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||__________ |", "|____/__________\\|"]
+                sixLeft   = [" ________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||           |", "|   ||           |", "|   ||           |", "|   ||__________ |", "|____/__________\\|"]
+                fiveLeft   = [" ________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||    😐     |", "|   ||           |", "|   ||           |", "|   ||__________ |", "|____/__________\\|"]
+                fourLeft    = [" ________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||    😕     |", "|   ||    \\|     |", "|   ||     |     |", "|   ||__________ |", "|____/__________\\|"]
+                threeLeft  = [" ________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||    🙁     |", "|   ||    \\|/    |", "|   ||     |     |", "|   ||__________ |", "|____/__________\\|"]
+                twoLeft  = [" ________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||    😮     |", "|   ||    \\|/    |", "|   ||     |     |", "|   ||____/_____ |", "|____/__________\\|"]
+                oneLeft   = [" ________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||    😬     |", "|   ||    \\|/    |", "|   ||     |     |", "|   ||____/_\\___ |", "|____/__________\\|"]
+                noneLeft    = [" ________________ ", "|   ________     |", "|   ||     |     |", "|   ||     |     |", "|   ||    😵     |", "|   ||    \\|/    |", "|   ||     |     |", "|   ||___ / \\ __ |", "|____/__________\\|"]
+                pictureMap = M.fromList [(0, noneLeft), (1, oneLeft), (2, twoLeft), (3, threeLeft), (4, fourLeft), (5, fiveLeft), (6, sixLeft), (7, sevenLeft), (8, eightLeft), (9, nineLeft), (10, tenLeft)]
+                maybePicture = M.lookup rg pictureMap
+                printableList = maybe [""] id maybePicture
+            putStrLn $ unlines printableList
+
+printDecodedSecretWord :: SecretWord -> OptionMap -> IO ()
+printDecodedSecretWord sw optMap = putStrLn $ "      " ++  getDecodedSecretWord sw optMap
+
+printHangmanUI :: SecretWord -> OptionMap -> RemainingGuesses -> IO ()
+printHangmanUI sw optMap rg = do
+                            printPicture rg
+                            printDecodedSecretWord sw optMap
+
+
+-- this file shouldn't be concerned with State at all...
+-- printHangmanUIWS :: StateT GameState IO ()
+-- printHangmanUIWS = do
+--         gameState <- get
+--         let rg = remainingGuesses gameState
+--             optMap = optionMap gameState
+--             sw = secretWord gameState
+--         liftIO $ printPicture rg
+--         liftIO $ printDecodedSecretWord sw optMap
+
                         
 
 
@@ -35,7 +64,7 @@ import SharedTypes(GameDifficulty(..))
 -- |_________________|
 
 -- -- one wrong
---  _________________
+--  ________________
 -- |                |
 -- |                |
 -- |                |
@@ -46,7 +75,7 @@ import SharedTypes(GameDifficulty(..))
 -- |____/__________\|
 
 -- -- two wrong
---  _________________
+--  ________________
 -- |                |
 -- |   ||           |
 -- |   ||           |
@@ -58,7 +87,7 @@ import SharedTypes(GameDifficulty(..))
 
 -- -- three wrong
  
---  _________________
+--  ________________
 -- |   ________     |
 -- |   ||           |
 -- |   ||           |
@@ -69,7 +98,7 @@ import SharedTypes(GameDifficulty(..))
 -- |____/__________\|
  
 --  -- four wrong
---  _________________
+--  ________________
 -- |   ________     |
 -- |   ||     |     |
 -- |   ||     |     |
@@ -80,7 +109,7 @@ import SharedTypes(GameDifficulty(..))
 -- |____/__________\|
 
 -- -- five wrong
---  _________________
+--  ________________
 -- |   ________     |
 -- |   ||     |     |
 -- |   ||     |     |
@@ -91,7 +120,7 @@ import SharedTypes(GameDifficulty(..))
 -- |____/__________\|
 
 -- -- six wrong
---  _________________
+--  ________________
 -- |   ________     |
 -- |   ||     |     |
 -- |   ||     |     |
