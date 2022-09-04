@@ -17,7 +17,17 @@ import Data.List (all)
 import qualified Data.Map as M
 import Control.Monad.State
 
-import SharedTypes (GameStatus(..), SecretWord, InputValidity(..), InWordStatus(..), Option(..), OptionMap, GuessStatus(..), GameState(..))
+import SharedTypes 
+                ( GameStatus(..)
+                , SecretWord
+                , InputValidity(..)
+                , InWordStatus(..)
+                , Option(..)
+                , OptionMap
+                , GuessStatus(..)
+                , GameState(..)
+                , GameEnv(..)
+                )
 
 
 
@@ -73,10 +83,10 @@ checkForWin sw optMap = if all (\char -> getGuessStatus char optMap == Guessed) 
                             then Won
                             else InProgress
 
-getGameStatus :: State GameState GameStatus
-getGameStatus = do
+getGameStatus :: GameEnv -> State GameState GameStatus
+getGameStatus env = do
     game <- get
-    if all (\char -> getGuessStatus char (optionMap game) == Guessed) (secretWord game)
+    if all (\char -> getGuessStatus char (optionMap game) == Guessed) (secretWord env)
                             then return Won
                             else return InProgress
 

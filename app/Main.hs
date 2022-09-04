@@ -1,13 +1,36 @@
 module Main where
 
 import Control.Monad.State
+import Control.Monad.Reader
 import Data.Char (toLower)
 
 import System.Console.ANSI (clearScreen)
 
 import IOInputs (getSecretWord, getDifficulty)
-import SharedTypes(SecretWord, GuessCount, RemainingGuesses, GuessedLetters, AttemptsAllowed, GameStatus(..), InWordStatus(..), GameDifficulty(..), Player(..), GameState(..), InputValidity(..))
-import Logic (generateOptionMap, OptionMap, addGuess, checkForWin, getIsInWord, getGameStatus, getAllGuesses, checkForValidGuess)
+import SharedTypes
+            ( SecretWord
+            , GuessCount
+            , RemainingGuesses
+            , GuessedLetters
+            , AttemptsAllowed
+            , GameStatus(..)
+            , InWordStatus(..)
+            , GameDifficulty(..)
+            , Player(..)
+            , GameState(..)
+            , GameEnv(..)
+            , InputValidity(..)
+            )
+import Logic 
+            ( generateOptionMap
+            , OptionMap
+            , addGuess
+            , checkForWin
+            , getIsInWord
+            , getGameStatus
+            , getAllGuesses
+            , checkForValidGuess
+            )
 import Printers(printHangmanUI)
 
 main :: IO()
@@ -29,23 +52,25 @@ playGame = do
                             Normal -> 7
                             Hard -> 5
         remainingGuesses = attemptsAllowed :: RemainingGuesses
-        initialGameState = GameState {optionMap = optionMap, remainingGuesses = remainingGuesses, secretWord = sw}
-    runStateT playTurns initialGameState
+        initialGameState = GameState {optionMap = optionMap, remainingGuesses = remainingGuesses}
+        gameEnv          = GameEnv {secretWord = sw}
+    runStateT (runReaderT playTurns gameEnv) initialGameState
     return ()
 
-playTurns :: StateT GameState IO ()
+playTurns :: ReaderT GameEnv (StateT GameState IO) ()
 playTurns = do
-        gameState <- get
+        gameState   <- get
+        env         <- ask
         let rg = remainingGuesses gameState
             optMap = optionMap gameState
-            sw = secretWord gameState
+            sw = secretWord env
         liftIO $ printHangmanUI sw optMap rg
         if rg == 0
         then do
             liftIO $ putStrLn "Sorry! You're out of guesses :("
             liftIO $ putStrLn $ "The secret word was: " ++ show sw
         else do
-            guess <- getUserGuess
+            guess <- lift getUserGuess
             let inWordStatus = getIsInWord guess optMap
                 newOptMap = addGuess guess optMap
                 gameStatus = checkForWin sw newOptMap

@@ -13,6 +13,7 @@ module SharedTypes
                 , Option(..)
                 , GuessStatus(..)
                 , GameState(..)
+                , GameEnv(..)
                 ) where
 
 import qualified Data.Map as M
@@ -31,8 +32,8 @@ data Player = PlayerOne | PlayerTwo deriving (Show, Eq)
 data GameState = GameState 
                     { optionMap :: OptionMap
                     , remainingGuesses :: RemainingGuesses
-                    , secretWord :: SecretWord
                     }
+data GameEnv = GameEnv {secretWord :: SecretWord}
 
 data GuessStatus = Guessed | NotGuessed deriving (Show, Eq)
 data Option = Option {letter :: Char, guessStatus :: GuessStatus, inWordStatus :: InWordStatus} deriving Show
