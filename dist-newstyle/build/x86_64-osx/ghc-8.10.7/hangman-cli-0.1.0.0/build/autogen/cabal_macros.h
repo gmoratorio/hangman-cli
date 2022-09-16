@@ -40,6 +40,16 @@
   (major1) == 0 && (major2) <  6 || \
   (major1) == 0 && (major2) == 6 && (minor) <= 5)
 #endif /* MIN_VERSION_containers */
+/* package hspec-2.10.1 */
+#ifndef VERSION_hspec
+#define VERSION_hspec "2.10.1"
+#endif /* VERSION_hspec */
+#ifndef MIN_VERSION_hspec
+#define MIN_VERSION_hspec(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  10 || \
+  (major1) == 2 && (major2) == 10 && (minor) <= 1)
+#endif /* MIN_VERSION_hspec */
 /* package mtl-2.2.2 */
 #ifndef VERSION_mtl
 #define VERSION_mtl "2.2.2"

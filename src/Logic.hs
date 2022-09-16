@@ -4,11 +4,11 @@ module Logic
         , checkForValidDifficulty
         , generateOptionMap
         , addGuess
-        , checkForWin
         , getIsInWord
         , getAllGuesses
         , getDecodedSecretWord
         , getGameStatus
+        , getGameStatus'
         , OptionMap
         ) where
 
@@ -16,6 +16,7 @@ import Data.Maybe (fromJust, isNothing)
 import Data.List (all)
 import qualified Data.Map as M
 import Control.Monad.State
+import Control.Monad.Reader
 
 import SharedTypes 
                 ( GameStatus(..)
@@ -78,14 +79,20 @@ decodeLetter opt c = if getGuessStatus c opt == Guessed
 getDecodedSecretWord :: SecretWord -> OptionMap -> String
 getDecodedSecretWord sw optMap = decodeLetter optMap <$> sw
 
-checkForWin :: SecretWord -> OptionMap -> GameStatus
-checkForWin sw optMap = if all (\char -> getGuessStatus char optMap == Guessed) sw
-                            then Won
-                            else InProgress
+-- getDecodedSecretWord' :: ReaderT GameEnv (StateT GameState IO) (String) 
 
-getGameStatus :: GameEnv -> State GameState GameStatus
-getGameStatus env = do
+getGameStatus :: ReaderT GameEnv (State GameState) GameStatus 
+getGameStatus = do
     game <- get
+    env <- ask
+    if all (\char -> getGuessStatus char (optionMap game) == Guessed) (secretWord env)
+                            then return Won
+                            else return InProgress
+
+getGameStatus' :: ReaderT GameEnv (StateT GameState IO) (GameStatus) 
+getGameStatus' = do
+    game <- get
+    env <- ask
     if all (\char -> getGuessStatus char (optionMap game) == Guessed) (secretWord env)
                             then return Won
                             else return InProgress

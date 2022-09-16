@@ -25,13 +25,13 @@ import Logic
             ( generateOptionMap
             , OptionMap
             , addGuess
-            , checkForWin
             , getIsInWord
             , getGameStatus
+            , getGameStatus'
             , getAllGuesses
             , checkForValidGuess
             )
-import Printers(printHangmanUI)
+import Printers(printHangmanUI, printWinningPicture)
 
 main :: IO()
 main = playGame
@@ -73,18 +73,22 @@ playTurns = do
             guess <- lift getUserGuess
             let inWordStatus = getIsInWord guess optMap
                 newOptMap = addGuess guess optMap
-                gameStatus = checkForWin sw newOptMap
                 newRemainingGuesses = if inWordStatus == InWord then rg else rg - 1
             put $ gameState {optionMap = newOptMap, remainingGuesses = newRemainingGuesses}
-            liftIO $ clearScreen
+            newGameState <- get
+            -- let gameStatus = evalState (runReaderT getGameStatus env) newGameState
+            gameStatus <- getGameStatus'
+            liftIO clearScreen
             if inWordStatus == InWord 
                 then liftIO $ putStrLn $ "Good guess! " ++ show guess ++ " is in the secret word."
                 else liftIO $ putStrLn $ "Sorry, " ++ show guess ++ " is not in the secret word."
             liftIO $ putStrLn "Press any key to continue to the next round."
-            liftIO $ getChar
-            liftIO $ clearScreen
+            liftIO getChar
+            liftIO clearScreen
             if gameStatus == Won
-                then liftIO $ putStrLn $ "Congratulations! You correctly guessed the word: " ++ show sw
+                then do
+                    liftIO printWinningPicture
+                    liftIO $ putStrLn $ "Congratulations! You correctly guessed the word: " ++ show sw
                 else playTurns
 
 getUserGuess :: StateT GameState IO (Char)

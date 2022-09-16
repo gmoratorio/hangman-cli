@@ -1,5 +1,6 @@
 module Printers 
             ( printHangmanUI
+            , printWinningPicture
             ) where
 
 import qualified Data.Map as M
@@ -27,6 +28,11 @@ printPicture rg = do
                 maybePicture = M.lookup rg pictureMap
                 printableList = maybe [""] id maybePicture
             putStrLn $ unlines printableList
+
+printWinningPicture :: IO ()
+printWinningPicture = do
+            let picture = [" ________________ ", "|   ________     |", "|   ||           |", "|   ||           |", "|   ||    😅     |", "|   ||    \\|/    |", "|   ||     |     |", "|   ||____/_\\___ |", "|____/__________\\|"]
+            putStrLn $ unlines picture
 
 printDecodedSecretWord :: SecretWord -> OptionMap -> IO ()
 printDecodedSecretWord sw optMap = putStrLn $ "      " ++  getDecodedSecretWord sw optMap
