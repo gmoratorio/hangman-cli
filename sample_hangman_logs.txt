@@ -1,0 +1,60 @@
+New Game Start: 2022-09-22 20:07:47.155425 UTC
+Player 1: Hosky
+Player 2: Guillermo
+Secret Word: "evergreen"
+
+Sorry, 'q' is not in the secret word.
+Press any key to continue to the next round.
+
+Sorry, 'w' is not in the secret word.
+Press any key to continue to the next round.
+
+Good guess! 'e' is in the secret word.
+Press any key to continue to the next round.
+
+Good guess! 'r' is in the secret word.
+Press any key to continue to the next round.
+
+Sorry, 't' is not in the secret word.
+Press any key to continue to the next round.
+
+Sorry, 'y' is not in the secret word.
+Press any key to continue to the next round.
+
+Sorry, 'u' is not in the secret word.
+Press any key to continue to the next round.
+
+Sorry, 'i' is not in the secret word.
+Press any key to continue to the next round.
+
+Sorry, 'o' is not in the secret word.
+Press any key to continue to the next round.
+
+Sorry! You're out of guesses :(
+The secret word was: "evergreen"
+Game End: 2022-09-22 20:07:52.948891 UTC
+ 
+
+New Game Start: 2022-09-22 20:18:53.663792 UTC
+Player 1: Guillermo
+Player 2: Hosky
+Secret Word: "aspen"
+
+Good guess! 'a' is in the secret word.
+Press any key to continue to the next round.
+
+Good guess! 's' is in the secret word.
+Press any key to continue to the next round.
+
+Good guess! 'p' is in the secret word.
+Press any key to continue to the next round.
+
+Good guess! 'e' is in the secret word.
+Press any key to continue to the next round.
+
+Good guess! 'n' is in the secret word.
+Press any key to continue to the next round.
+
+Congratulations! You correctly guessed the word: "aspen"
+Game End: 2022-09-22 20:18:59.189581 UTC
+ 
