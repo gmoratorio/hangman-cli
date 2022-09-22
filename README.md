@@ -9,9 +9,9 @@ To get started, clone this repository, `cabal build` and then `cabal run`
 This is a two player game, where the First Player will enter a secret word, and the Second Player has a certain amount of attempts to guess that secret word, one letter at a time.
 
 The game has 3 settings, Easy, Normal, and Hard. These settings dictate how many turns the Second Player will have to guess the word:
- * Easy -> 10 Turns
- * Normal -> 7 Turns
- * Hard -> 5 Turns
+ * Easy     -> 10 Turns
+ * Normal   -> 7 Turns
+ * Hard     -> 5 Turns
 
 ### Logging
 hangman-cli will log records of each game that is completed. Note that only completed games will be logged. Logs will be saved to `hangman_logs.txt` in the root of the project folder. A sample game log is shown below:
