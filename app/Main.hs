@@ -19,6 +19,7 @@ import SharedTypes
             , AttemptsAllowed
             , GameStatus(..)
             , InWordStatus(..)
+            , GuessStatus(..)
             , GameDifficulty(..)
             , Player(..)
             , GameState(..)
@@ -30,6 +31,7 @@ import Logic
             , OptionMap
             , addGuess
             , getIsInWord
+            , getGuessStatus
             , getGameStatus
             , getAllGuesses
             , checkForValidGuess
@@ -82,23 +84,33 @@ playTurns = do
         else do
             guess <- lift $ lift getUserGuess
             let inWordStatus = getIsInWord guess optMap
+                guessStatus = getGuessStatus guess optMap
                 newOptMap = addGuess guess optMap
                 newRemainingGuesses = if inWordStatus == InWord then rg else rg - 1
-            put $ gameState {optionMap = newOptMap, remainingGuesses = newRemainingGuesses}
-            newGameState <- get
-            gameStatus <- lift getGameStatus
-            liftIO clearScreen
-            if inWordStatus == InWord
-                then printAndTell $ "\nGood guess! " ++ show guess ++ " is in the secret word."
-                else printAndTell $ "\nSorry, " ++ show guess ++ " is not in the secret word."
-            printAndTell "Press any key to continue to the next round."
-            liftIO getChar
-            liftIO clearScreen
-            if gameStatus == Won
+            if guessStatus == Guessed
                 then do
-                    liftIO printWinningPicture
-                    printAndTell $ "\nCongratulations! You correctly guessed the word: " ++ show sw
-                else playTurns
+                    liftIO clearScreen
+                    printAndTell $ "\nHey, you already guessed " ++ show guess ++ "!"
+                    printAndTell "Press any key to try again."
+                    liftIO getChar
+                    liftIO clearScreen
+                    playTurns
+                else do
+                    put $ gameState {optionMap = newOptMap, remainingGuesses = newRemainingGuesses}
+                    newGameState <- get
+                    gameStatus <- lift getGameStatus
+                    liftIO clearScreen
+                    if inWordStatus == InWord
+                        then printAndTell $ "\nGood guess! " ++ show guess ++ " is in the secret word."
+                        else printAndTell $ "\nSorry, " ++ show guess ++ " is not in the secret word."
+                    printAndTell "Press any key to continue to the next round."
+                    liftIO getChar
+                    liftIO clearScreen
+                    if gameStatus == Won
+                        then do
+                            liftIO printWinningPicture
+                            printAndTell $ "\nCongratulations! You correctly guessed the word: " ++ show sw
+                        else playTurns
 
 getUserGuess :: StateT GameState IO (Char)
 getUserGuess = do

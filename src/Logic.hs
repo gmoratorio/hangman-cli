@@ -6,6 +6,7 @@ module Logic
         , generateOptionMap
         , addGuess
         , getIsInWord
+        , getGuessStatus
         , getAllGuesses
         , getDecodedSecretWord
         , getGameStatus
