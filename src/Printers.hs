@@ -1,10 +1,15 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Printers 
             ( printHangmanUI
             , printWinningPicture
+            , saveGameLogs
             ) where
 
 import qualified Data.Map as M
 import Control.Monad.State
+import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 
 import SharedTypes(SecretWord, RemainingGuesses, GameState(..))
 import Logic(getDecodedSecretWord, OptionMap)
@@ -41,3 +46,8 @@ printHangmanUI :: SecretWord -> OptionMap -> RemainingGuesses -> IO ()
 printHangmanUI sw optMap rg = do
                             printPicture rg
                             printDecodedSecretWord sw optMap
+
+saveGameLogs :: [Text] -> IO ()
+saveGameLogs logs = do
+            TIO.appendFile "hangman_logs.txt" $ T.unlines logs
+            return ()

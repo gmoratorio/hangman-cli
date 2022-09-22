@@ -29,24 +29,17 @@ getSecretWord = do
 getDifficulty :: IO (GameDifficulty)
 getDifficulty = do
             putStrLn "Select your difficuty. Enter E for Easy, N for Normal, or H for Hard."
-            diff <- getLine
-            if length diff == 1
-                then do
-                    let lowerDiff = toLower $ head diff
-                        validity = checkForValidDifficulty lowerDiff
-                    if validity == Valid
-                        then case lowerDiff of
-                            'e' -> return Easy
-                            'n' -> return Normal
-                            'h' -> return Hard
-                        else do
-                            clearScreen
-                            putStrLn "Sorry, please enter E for Easy, N for Normal, or H for Hard."
-                            putStrLn $ "You entered: " ++ show lowerDiff
-                            getDifficulty
+            diff <- getChar
+            let lowerDiff = toLower diff
+                validity = checkForValidDifficulty lowerDiff
+            if validity == Valid
+                then case lowerDiff of
+                    'e' -> return Easy
+                    'n' -> return Normal
+                    'h' -> return Hard
                 else do
                     clearScreen
-                    putStrLn "Sorry, please enter E for Easy, N for Normal, or H for Hard."
-                    putStrLn $ "You entered: " ++ show diff
+                    putStrLn "\nSorry, please enter E for Easy, N for Normal, or H for Hard."
+                    putStrLn $ "You entered: " ++ show lowerDiff
                     getDifficulty
         
