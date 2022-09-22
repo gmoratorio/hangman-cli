@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Logic
         ( checkForValidSecretWord
         , checkForValidGuess
@@ -82,8 +81,6 @@ decodeLetter opt c = if getGuessStatus c opt == Guessed
 
 getDecodedSecretWord :: SecretWord -> OptionMap -> String
 getDecodedSecretWord sw optMap = decodeLetter optMap <$> sw
-
--- getDecodedSecretWord' :: ReaderT GameEnv (StateT GameState IO) (String) 
 
 getGameStatus :: ReaderT GameEnv (StateT GameState IO) (GameStatus) 
 getGameStatus = do

@@ -15,9 +15,14 @@ module SharedTypes
                 , GuessStatus(..)
                 , GameState(..)
                 , GameEnv(..)
+                , AppM
                 ) where
 
 import qualified Data.Map as M
+import Data.Text (Text)
+import Control.Monad.State
+import Control.Monad.Reader
+import Control.Monad.Writer
 
 type OptionMap = M.Map Char Option
 type SecretWord = String
@@ -25,6 +30,7 @@ type GuessCount = Int
 type RemainingGuesses = Int
 type GuessedLetters = String
 type AttemptsAllowed = Int
+type AppM = WriterT [Text] (ReaderT GameEnv (StateT GameState IO))
 
 newtype PlayerName = PlayerName String
 instance Show PlayerName where show (PlayerName str) = str

@@ -26,6 +26,7 @@ import SharedTypes
             , GameState(..)
             , GameEnv(..)
             , InputValidity(..)
+            , AppM
             )
 import Logic 
             ( generateOptionMap
@@ -69,17 +70,17 @@ playGame = do
     saveGameLogs logs
     return ()
 
-printAndTell :: String -> WriterT [Text] (ReaderT GameEnv (StateT GameState IO)) ()
+printAndTell :: String -> AppM ()
 printAndTell message = do
                 liftIO $ putStrLn message
                 tell [pack message]
 
-startGameAndPlayturns :: WriterT [Text] (ReaderT GameEnv (StateT GameState IO)) ()
+startGameAndPlayturns :: AppM ()
 startGameAndPlayturns = do
         startGame
         playTurns
 
-startGame :: WriterT [Text] (ReaderT GameEnv (StateT GameState IO)) ()
+startGame :: AppM ()
 startGame = do
         env         <- ask
         let p1 = player1 env
@@ -92,7 +93,7 @@ startGame = do
         tell [pack $ "Secret Word: " ++ show sw]
         return ()
 
-endGame :: GameStatus -> WriterT [Text] (ReaderT GameEnv (StateT GameState IO)) ()
+endGame :: GameStatus -> AppM ()
 endGame gs = do
         env <- ask
         let sw = secretWord env
@@ -107,7 +108,7 @@ endGame gs = do
         tell [pack $ "Game End: " ++ show endDateTime ++ "\n "]
 
 
-playTurns :: WriterT [Text] (ReaderT GameEnv (StateT GameState IO)) ()
+playTurns :: AppM ()
 playTurns = do
         gameState   <- get
         env         <- ask
