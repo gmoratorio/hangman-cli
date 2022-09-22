@@ -6,11 +6,12 @@ import Control.Monad.Reader
 import Control.Monad.Writer
 import Data.Char (toLower)
 import Data.Text (Text, pack)
+import Data.Time
 import System.IO (hSetBuffering, stdin, BufferMode(NoBuffering))
 
 import System.Console.ANSI (clearScreen)
 
-import IOInputs (getSecretWord, getDifficulty)
+import IOInputs (getSecretWord, getDifficulty, getPlayerNames)
 import SharedTypes
             ( SecretWord
             , GuessCount
@@ -44,10 +45,14 @@ main = playGame
 playGame :: IO ()
 playGame = do
     hSetBuffering stdin NoBuffering
-    sw <- getSecretWord
+    (p1, p2) <- getPlayerNames
+    putStrLn "\nOk, player names are set!"
+    putStrLn "Press any key to continue."
+    getChar
+    sw <- getSecretWord p1
     clearScreen
     putStrLn "\nOk, the secret word is set!"
-    diff <- getDifficulty
+    diff <- getDifficulty p2
     clearScreen
     putStrLn $ "\nOk, the difficulty is set to " ++ show diff
     putStrLn "Now on to the game!"
@@ -59,8 +64,8 @@ playGame = do
                             Hard -> 5
         remainingGuesses = attemptsAllowed :: RemainingGuesses
         initialGameState = GameState {optionMap = optionMap, remainingGuesses = remainingGuesses}
-        gameEnv          = GameEnv {secretWord = sw}
-    ((_,logs), _) <- runStateT (runReaderT (runWriterT playTurns) gameEnv) initialGameState
+        gameEnv          = GameEnv {secretWord = sw, player1 = p1, player2 = p2}
+    ((_,logs), _) <- runStateT (runReaderT (runWriterT startGameAndPlayturns) gameEnv) initialGameState
     saveGameLogs logs
     return ()
 
@@ -69,6 +74,24 @@ printAndTell message = do
                 liftIO $ putStrLn message
                 tell [pack message]
 
+startGameAndPlayturns :: WriterT [Text] (ReaderT GameEnv (StateT GameState IO)) ()
+startGameAndPlayturns = do
+        startGame
+        playTurns
+
+startGame :: WriterT [Text] (ReaderT GameEnv (StateT GameState IO)) ()
+startGame = do
+        env         <- ask
+        let p1 = player1 env
+            p2 = player2 env
+            sw = secretWord env
+        startDateTime <- liftIO getCurrentTime
+        tell [pack $ "New Game Start: " ++ show startDateTime]
+        tell [pack $ "Player 1: " ++ show p1]
+        tell [pack $ "Player 2: " ++ show p2]
+        tell [pack $ "Secret Word: " ++ show sw]
+        return ()
+
 playTurns :: WriterT [Text] (ReaderT GameEnv (StateT GameState IO)) ()
 playTurns = do
         gameState   <- get
@@ -76,13 +99,15 @@ playTurns = do
         let rg = remainingGuesses gameState
             optMap = optionMap gameState
             sw = secretWord env
+            p1 = player1 env
+            p2 = player2 env
         liftIO $ printHangmanUI sw optMap rg
         if rg == 0
         then do
             printAndTell "\nSorry! You're out of guesses :("
             printAndTell $ "The secret word was: " ++ show sw
         else do
-            guess <- lift $ lift getUserGuess
+            guess <- lift getUserGuess
             let inWordStatus = getIsInWord guess optMap
                 guessStatus = getGuessStatus guess optMap
                 newOptMap = addGuess guess optMap
@@ -110,22 +135,26 @@ playTurns = do
                         then do
                             liftIO printWinningPicture
                             printAndTell $ "\nCongratulations! You correctly guessed the word: " ++ show sw
+                            endDateTime <- liftIO getCurrentTime
+                            tell [pack $ "Game End: " ++ show endDateTime]
                         else playTurns
 
-getUserGuess :: StateT GameState IO (Char)
+getUserGuess :: ReaderT GameEnv (StateT GameState IO) (Char)
 getUserGuess = do
         gameState <- get
+        env       <- ask
         let rg = remainingGuesses gameState
             optMap = optionMap gameState
             guessedLetters = getAllGuesses optMap
+            p2 = player2 env
         liftIO $ putStrLn $ "\nYou have " ++ show rg  ++ " guesses left"
         if null guessedLetters
             then liftIO $ putStrLn "\nYou've guessed no letters so far."
             else do
                 liftIO $ putStrLn "\nYou've guessed these letters so far: "
                 liftIO $ putStrLn guessedLetters
-        liftIO $ putStrLn "\nPlayer 2, guess a letter!\n\n\n"
-        guess <- lift getChar
+        liftIO $ putStrLn $ "\n" ++ show p2 ++ ", guess a letter!\n"
+        guess <- liftIO getChar
         let lowerGuess = toLower guess
             validity = checkForValidGuess lowerGuess
         if validity == Valid

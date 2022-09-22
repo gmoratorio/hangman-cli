@@ -3,6 +3,7 @@ module Logic
         ( checkForValidSecretWord
         , checkForValidGuess
         , checkForValidDifficulty
+        , checkForValidPlayerName
         , generateOptionMap
         , addGuess
         , getIsInWord
@@ -103,5 +104,10 @@ checkForValidGuess input = if input `elem` ['a'..'z']
                                 else NotValid
 checkForValidDifficulty :: Char -> InputValidity 
 checkForValidDifficulty input = if input `elem` ['e','n','h']
+                                    then Valid
+                                    else NotValid
+
+checkForValidPlayerName :: String -> InputValidity 
+checkForValidPlayerName input = if all (\char -> char `elem` ['a'..'z']++['A'..'Z']++[' ']) input
                                     then Valid
                                     else NotValid
