@@ -86,11 +86,26 @@ startGame = do
             p2 = player2 env
             sw = secretWord env
         startDateTime <- liftIO getCurrentTime
-        tell [pack $ "New Game Start: " ++ show startDateTime]
+        tell [pack $ "\nNew Game Start: " ++ show startDateTime]
         tell [pack $ "Player 1: " ++ show p1]
         tell [pack $ "Player 2: " ++ show p2]
         tell [pack $ "Secret Word: " ++ show sw]
         return ()
+
+endGame :: GameStatus -> WriterT [Text] (ReaderT GameEnv (StateT GameState IO)) ()
+endGame gs = do
+        env <- ask
+        let sw = secretWord env
+        if gs == Won
+            then do
+                liftIO printWinningPicture
+                printAndTell $ "\nCongratulations! You correctly guessed the word: " ++ show sw
+            else do
+                printAndTell "\nSorry! You're out of guesses :("
+                printAndTell $ "The secret word was: " ++ show sw
+        endDateTime <- liftIO getCurrentTime
+        tell [pack $ "Game End: " ++ show endDateTime ++ "\n "]
+
 
 playTurns :: WriterT [Text] (ReaderT GameEnv (StateT GameState IO)) ()
 playTurns = do
@@ -103,9 +118,7 @@ playTurns = do
             p2 = player2 env
         liftIO $ printHangmanUI sw optMap rg
         if rg == 0
-        then do
-            printAndTell "\nSorry! You're out of guesses :("
-            printAndTell $ "The secret word was: " ++ show sw
+        then endGame Lost
         else do
             guess <- lift getUserGuess
             let inWordStatus = getIsInWord guess optMap
@@ -132,11 +145,7 @@ playTurns = do
                     liftIO getChar
                     liftIO clearScreen
                     if gameStatus == Won
-                        then do
-                            liftIO printWinningPicture
-                            printAndTell $ "\nCongratulations! You correctly guessed the word: " ++ show sw
-                            endDateTime <- liftIO getCurrentTime
-                            tell [pack $ "Game End: " ++ show endDateTime]
+                        then endGame Won
                         else playTurns
 
 getUserGuess :: ReaderT GameEnv (StateT GameState IO) (Char)
