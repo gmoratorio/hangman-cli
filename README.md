@@ -3,7 +3,10 @@ CLI Hangman written in Haskell
 
 ## Welcome to Hangman!
 ### Getting Started
-To get started, clone this repository, `cabal build` and then `cabal run`
+To get started, clone this repository, `cabal build` and then `cabal run hangman-cli`
+
+### Tests
+To run tests `cabal run hangman-test`
 
 ### Game Rules
 This is a two player game, where the First Player will enter a secret word, and the Second Player has a certain amount of attempts to guess that secret word, one letter at a time.

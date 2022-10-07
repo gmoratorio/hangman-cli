@@ -1,5 +1,6 @@
 module Main where
 
+import Test.QuickCheck
 import Test.Hspec
 import Control.Monad.State
 import Control.Monad.Reader
@@ -21,13 +22,16 @@ import Logic
             , checkForValidSecretWord
             , checkForValidGuess
             , checkForValidPlayerName
+            , checkForValidDifficulty
             )
 
 main :: IO ()
-main = runTests
+main = do
+    runUnitTests
+    runPropertyTests
 
-runTests :: IO ()    
-runTests = hspec $ do
+runUnitTests :: IO ()    
+runUnitTests = hspec $ do
     let secretWord = "banana" :: SecretWord
         badSecretWord = "?banana!" :: SecretWord
         blankOptMap = generateOptionMap secretWord
@@ -77,3 +81,31 @@ runTests = hspec $ do
     describe "Given a guess that has special characters" $ do
         it "Should indicate that this name is NOT valid" $ do
             checkForValidPlayerName "Hosky!" `shouldBe` NotValid
+
+-- QuickCheck tests
+alphaLowercase :: String -> Bool 
+alphaLowercase = all (\char -> char `elem` ['a'..'z'])
+
+lettersAndSpaces :: String -> Bool
+lettersAndSpaces = all (\char -> char `elem` ['a'..'z']<>['A'..'Z']<>[' '])
+
+validDifficultyEntry :: Char -> Bool
+validDifficultyEntry entry = entry `elem` ['e','n','h']
+
+minLengthMet :: String -> Int -> Bool
+minLengthMet xs len = length xs >= len
+
+prop_valid_sw sw = (checkForValidSecretWord sw == Valid) == (alphaLowercase sw && minLengthMet sw 2)
+prop_valid_name name = (checkForValidPlayerName name == Valid) == (lettersAndSpaces name && minLengthMet name 1)
+prop_valid_difficulty entry = (checkForValidDifficulty entry == Valid) == validDifficultyEntry entry
+
+quickTests = [prop_valid_sw, prop_valid_name]
+
+run1000Tests :: Arbitrary a => Show a => Testable b => (a -> b) -> IO ()
+run1000Tests = quickCheck . withMaxSuccess 1000
+
+runPropertyTests :: IO ()
+runPropertyTests = do 
+            run1000Tests prop_valid_sw
+            run1000Tests prop_valid_name
+            run1000Tests prop_valid_difficulty
