@@ -30,6 +30,7 @@ import SharedTypes
             )
 import Logic 
             ( generateOptionMap
+            , generateDefaultDifficultyMap
             , OptionMap
             , addGuess
             , getIsInWord
@@ -53,19 +54,16 @@ playGame = do
     sw <- getSecretWord p1
     clearScreen
     putStrLn "\nOk, the secret word is set!"
-    diff <- getDifficulty p2
+    let difficultyMap = generateDefaultDifficultyMap
+    (difficulty, attemptsAllowed) <- getDifficulty p2 difficultyMap
     clearScreen
-    putStrLn $ "\nOk, the difficulty is set to " ++ show diff
+    putStrLn $ "\nOk, the difficulty is set to " <> show difficulty
     putStrLn "Now on to the game!"
     let optionMap = generateOptionMap sw
         guessCount = 0 :: GuessCount
-        attemptsAllowed = case diff of
-                            Easy -> 10
-                            Normal -> 7
-                            Hard -> 5
         remainingGuesses = attemptsAllowed :: RemainingGuesses
         initialGameState = GameState {optionMap = optionMap, remainingGuesses = remainingGuesses}
-        gameEnv          = GameEnv {secretWord = sw, player1 = p1, player2 = p2}
+        gameEnv          = GameEnv {secretWord = sw, difficulty = difficulty, player1 = p1, player2 = p2}
     ((_,logs), _) <- runStateT (runReaderT (runWriterT startGameAndPlayturns) gameEnv) initialGameState
     saveGameLogs logs
     return ()
@@ -86,26 +84,29 @@ startGame = do
         let p1 = player1 env
             p2 = player2 env
             sw = secretWord env
+            diff = difficulty env
         startDateTime <- liftIO getCurrentTime
-        tell [pack $ "\nNew Game Start: " ++ show startDateTime]
-        tell [pack $ "Player 1: " ++ show p1]
-        tell [pack $ "Player 2: " ++ show p2]
-        tell [pack $ "Secret Word: " ++ show sw]
+        tell [pack $ "\nNew Game Start: " <> show startDateTime]
+        tell [pack $ "Player 1: " <> show p1]
+        tell [pack $ "Player 2: " <> show p2]
+        tell [pack $ "Secret Word: " <> show sw]
+        tell [pack $ "Difficulty: " <> show diff]
         return ()
 
 endGame :: GameStatus -> AppM ()
 endGame gs = do
         env <- ask
         let sw = secretWord env
+            diff = difficulty env
         if gs == Won
             then do
                 liftIO printWinningPicture
-                printAndTell $ "\nCongratulations! You correctly guessed the word: " ++ show sw
+                printAndTell $ "\nCongratulations! You correctly guessed the word: " <> show sw
             else do
                 printAndTell "\nSorry! You're out of guesses :("
-                printAndTell $ "The secret word was: " ++ show sw
+                printAndTell $ "The secret word was: " <> show sw
         endDateTime <- liftIO getCurrentTime
-        tell [pack $ "Game End: " ++ show endDateTime ++ "\n "]
+        tell [pack $ "Game End: " <> show endDateTime <> "\n "]
 
 
 playTurns :: AppM ()
@@ -129,7 +130,7 @@ playTurns = do
             if guessStatus == Guessed
                 then do
                     liftIO clearScreen
-                    printAndTell $ "\nHey, you already guessed " ++ show guess ++ "!"
+                    printAndTell $ "\nHey, you already guessed " <> show guess <> "!"
                     printAndTell "Press any key to try again."
                     liftIO getChar
                     liftIO clearScreen
@@ -140,8 +141,8 @@ playTurns = do
                     gameStatus <- lift getGameStatus
                     liftIO clearScreen
                     if inWordStatus == InWord
-                        then printAndTell $ "\nGood guess! " ++ show guess ++ " is in the secret word."
-                        else printAndTell $ "\nSorry, " ++ show guess ++ " is not in the secret word."
+                        then printAndTell $ "\nGood guess! " <> show guess <> " is in the secret word."
+                        else printAndTell $ "\nSorry, " <> show guess <> " is not in the secret word."
                     printAndTell "Press any key to continue to the next round."
                     liftIO getChar
                     liftIO clearScreen
@@ -157,13 +158,13 @@ getUserGuess = do
             optMap = optionMap gameState
             guessedLetters = getAllGuesses optMap
             p2 = player2 env
-        liftIO $ putStrLn $ "\nYou have " ++ show rg  ++ " guesses left"
+        liftIO $ putStrLn $ "\nYou have " <> show rg  <> " guesses left"
         if null guessedLetters
             then liftIO $ putStrLn "\nYou've guessed no letters so far."
             else do
                 liftIO $ putStrLn "\nYou've guessed these letters so far: "
                 liftIO $ putStrLn guessedLetters
-        liftIO $ putStrLn $ "\n" ++ show p2 ++ ", guess a letter!\n"
+        liftIO $ putStrLn $ "\n" <> show p2 <> ", guess a letter!\n"
         guess <- liftIO getChar
         let lowerGuess = toLower guess
             validity = checkForValidGuess lowerGuess
@@ -172,5 +173,5 @@ getUserGuess = do
             else do
                 liftIO clearScreen
                 liftIO $ putStrLn "\nSorry, your guess must be a letter. Please try again."
-                liftIO $ putStrLn $ "You guessed: " ++ show guess
+                liftIO $ putStrLn $ "You guessed: " <> show guess
                 getUserGuess

@@ -4,6 +4,7 @@ module Logic
         , checkForValidDifficulty
         , checkForValidPlayerName
         , generateOptionMap
+        , generateDefaultDifficultyMap
         , addGuess
         , getIsInWord
         , getGuessStatus
@@ -28,9 +29,12 @@ import SharedTypes
                 , InWordStatus(..)
                 , Option(..)
                 , OptionMap
+                , DifficultyMap
+                , AttemptsAllowed
                 , GuessStatus(..)
                 , GameState(..)
                 , GameEnv(..)
+                , GameDifficulty(..)
                 )
 
 
@@ -47,6 +51,9 @@ generateOptionMap sw = foldr    (\char acc ->
                                     let option = generateOption char sw
                                     in M.insert char option acc
                                 ) mempty ['a'..'z']
+
+generateDefaultDifficultyMap :: DifficultyMap
+generateDefaultDifficultyMap = M.fromList [('e', (Easy, 10 :: AttemptsAllowed)), ('n', (Normal, 7)), ('h', (Hard, 5))]
 
 getGuessStatus :: Char -> OptionMap -> GuessStatus
 getGuessStatus char optMap =
@@ -91,7 +98,7 @@ getGameStatus = do
                             else return InProgress
 
 checkForValidSecretWord :: String -> InputValidity 
-checkForValidSecretWord input = if all (\char -> char `elem` ['a'..'z']) input
+checkForValidSecretWord input = if all (\char -> char `elem` ['a'..'z']) input && length input >= 2
                                     then Valid
                                     else NotValid
 
@@ -105,6 +112,6 @@ checkForValidDifficulty input = if input `elem` ['e','n','h']
                                     else NotValid
 
 checkForValidPlayerName :: String -> InputValidity 
-checkForValidPlayerName input = if all (\char -> char `elem` ['a'..'z']++['A'..'Z']++[' ']) input
+checkForValidPlayerName input = if all (\char -> char `elem` ['a'..'z']<>['A'..'Z']<>[' ']) input && not (null input)
                                     then Valid
                                     else NotValid

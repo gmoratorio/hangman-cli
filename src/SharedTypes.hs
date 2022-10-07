@@ -11,6 +11,7 @@ module SharedTypes
                 , InWordStatus(..)
                 , Player
                 , OptionMap
+                , DifficultyMap
                 , Option(..)
                 , GuessStatus(..)
                 , GameState(..)
@@ -25,11 +26,12 @@ import Control.Monad.Reader
 import Control.Monad.Writer
 
 type OptionMap = M.Map Char Option
+type DifficultyMap = M.Map Char (GameDifficulty, AttemptsAllowed)
 type SecretWord = String
 type GuessCount = Int
+type AttemptsAllowed = Int
 type RemainingGuesses = Int
 type GuessedLetters = String
-type AttemptsAllowed = Int
 type AppM = WriterT [Text] (ReaderT GameEnv (StateT GameState IO))
 
 newtype PlayerName = PlayerName String
@@ -44,7 +46,12 @@ data GameState = GameState
                     { optionMap :: OptionMap
                     , remainingGuesses :: RemainingGuesses
                     }
-data GameEnv = GameEnv {secretWord :: SecretWord, player1 :: PlayerName, player2 :: PlayerName}
+data GameEnv = GameEnv 
+                    { secretWord :: SecretWord
+                    , difficulty :: GameDifficulty
+                    , player1 :: PlayerName
+                    , player2 :: PlayerName
+                    }
 
 data GuessStatus = Guessed | NotGuessed deriving (Show, Eq)
 data Option = Option {letter :: Char, guessStatus :: GuessStatus, inWordStatus :: InWordStatus} deriving Show

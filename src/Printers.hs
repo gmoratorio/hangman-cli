@@ -40,7 +40,7 @@ printWinningPicture = do
             putStrLn $ unlines picture
 
 printDecodedSecretWord :: SecretWord -> OptionMap -> IO ()
-printDecodedSecretWord sw optMap = putStrLn $ "      " ++  getDecodedSecretWord sw optMap
+printDecodedSecretWord sw optMap = putStrLn $ "      " <>  getDecodedSecretWord sw optMap
 
 printHangmanUI :: SecretWord -> OptionMap -> RemainingGuesses -> IO ()
 printHangmanUI sw optMap rg = do
